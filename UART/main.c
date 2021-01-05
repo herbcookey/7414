@@ -26,6 +26,8 @@ void ADC_init(unsigned char channel)
 	
 	ADMUX |= ((ADMUX & 0xE0) | channel);
 	ADCSRA |= (1 << ADSC);
+	array[i][CNT] = read_ADC();
+			
 }
 int read_ADC(void)
 {
@@ -61,8 +63,15 @@ int main(void)
 			ADMUX = (ADMUX & 0xF8 | CNT);
 			_delay_ms(10);
 			ADCSRA |= (1 << ADSC);
-			array[i][CNT] = read_ADC();
-			
+			array[i][CNT] = read_ADC();	
+			if(array[i][CNT] >= 920)
+	 		{
+				array[i][CNT] = 1;
+			}
+			else
+			{
+				array[i][CNT] = 0;
+			}	
 		}
 		
 		for (i=0;i<100; i++)
