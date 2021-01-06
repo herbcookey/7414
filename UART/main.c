@@ -41,8 +41,7 @@ int read_ADC(void)
 
 int main(void)
 {
-	int read;
-	unsigned char CNT = 0;
+	unsigned char cnt = 0;
 	
 	stdout = &OUTPUT;
 	stdin = &INPUT;
@@ -52,33 +51,75 @@ int main(void)
 	
 	UART1_transmit('a');
 	
-	int array[100][8];
-	int i;
-	printf("HELLO");
+	int array[N_SAMPLES][N_SENSORS];
+	int i, j, max,btn_num;
+	int max2, btn_num2;
+	int ir_cnt[N_SENSORS];
+	
+	printf("RESET");
 	while(1)
 	{
-		for (i=0;i<100; i++)
-		for (CNT = 0 ; CNT< 8; CNT++)
+		for (i=0; i<N_SAMPLES; i++)
 		{
-			ADMUX = (ADMUX & 0xF8 | CNT);
-			_delay_ms(10);
-			ADCSRA |= (1 << ADSC);
-			array[i][CNT] = read_ADC();	
-			if(array[i][CNT] >= 920)
-	 		{
-				array[i][CNT] = 1;
-			}
-			else
+			for (cnt = 0 ; cnt< N_SENSORS; cnt++)
 			{
-				array[i][CNT] = 0;
-			}	
+				
+				ADMUX = (ADMUX & 0xF8 | cnt);
+				_delay_ms(10);
+				ADCSRA |= (1 << ADSC);
+				array[i][cnt] = read_ADC();
+				
+				if(array[i][cnt] >= 650)
+				{
+					array[i][cnt] = 1;
+				}
+				else
+				{
+					array[i][cnt] = 0;
+				}
+			}
 		}
 		
-		for (i=0;i<100; i++)
+		for (i=0;i<N_SAMPLES; i++)
 		{
-			for (CNT = 0 ; CNT< 8; CNT++)
-			printf("%d\t",array[i][CNT]);
-			printf("\n");
+			for (cnt = 0 ; cnt< N_SENSORS; cnt++)
+			{
+				//printf("%d\t",array[i][cnt]); // 센서에 입력되는 값 출력
+				//printf("\n");
+			}
+		}
+		//printf("\n");
+		for(i=0; i<N_SENSORS; i++)
+		{
+			for (j = 0; j < N_SAMPLES; j++)
+			{
+				ir_cnt[i] += array[j][i];
+			}
+			//printf("%d\t", ir_cnt[i]); // 결과 배열 값 출력
+		}
+		//printf("\n\n"); //줄 띄우기
+		
+		for(i=0; i<N_SENSORS; i++)
+		{
+			if(max < ir_cnt[i])
+			{
+				max = ir_cnt[i];
+				btn_num = i+1;
+			}
+		}
+		
+		if(btn_num != 0)
+		{
+			printf("btn_num = %d\n", btn_num);
+		}
+		
+		//printf("max = %d\n", max); // 최대 값 출력
+		btn_num = 0;
+		max = 0;	
+		
+		for(i=0; i<N_SENSORS; i++)
+		{
+			ir_cnt[i] = 0;
 		}
 	}
 }
