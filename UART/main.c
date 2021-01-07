@@ -6,6 +6,8 @@
  */ 
 
 #define F_CPU 16000000L
+#define N_SAMPLES 9
+#define N_SENSORS 7
 #include <avr/io.h>
 #include <util/delay.h>
 #include <stdio.h>
@@ -54,6 +56,7 @@ int main(void)
 	int array[N_SAMPLES][N_SENSORS];
 	int i, j, max,btn_num;
 	int max2, btn_num2;
+	int pwd = 0;
 	int ir_cnt[N_SENSORS];
 	
 	printf("RESET");
@@ -110,7 +113,15 @@ int main(void)
 		
 		if(btn_num != 0)
 		{
-			printf("btn_num = %d\n", btn_num);
+			//printf("btn_num = %d\n", btn_num);
+			pwd = pwd*10 + btn_num;
+			printf("Password Input : %d\n", pwd);
+		}
+		
+		if(pwd == PWD)
+		{
+			printf("OPEN\n");
+			break;
 		}
 		
 		//printf("max = %d\n", max); // 최대 값 출력
