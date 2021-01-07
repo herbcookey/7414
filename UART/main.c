@@ -6,6 +6,7 @@
  */ 
 
 #define F_CPU 16000000L
+#define PWD 123
 #define N_SAMPLES 9
 #define N_SENSORS 7
 #include <avr/io.h>
@@ -28,7 +29,6 @@ void ADC_init(unsigned char channel)
 	
 	ADMUX |= ((ADMUX & 0xE0) | channel);
 	ADCSRA |= (1 << ADSC);
-	array[i][CNT] = read_ADC();
 			
 }
 int read_ADC(void)
