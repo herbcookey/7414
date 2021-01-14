@@ -11,6 +11,7 @@
 #define N_SENSORS 8
 #define TRUE 1
 #define FALSE 0
+#define THRESHOLD 900
 
 #include <avr/io.h>
 #include <util/delay.h>
