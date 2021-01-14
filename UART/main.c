@@ -6,9 +6,12 @@
  */ 
 
 #define F_CPU 16000000L
-#define PWD 123
-#define N_SAMPLES 9
-#define N_SENSORS 7
+#define PWD 6671
+#define N_SAMPLES 8
+#define N_SENSORS 8
+#define TRUE 1
+#define FALSE 0
+
 #include <avr/io.h>
 #include <util/delay.h>
 #include <stdio.h>
@@ -54,10 +57,14 @@ int main(void)
 	UART1_transmit('a');
 	
 	int array[N_SAMPLES][N_SENSORS];
-	int i, j, max,btn_num;
-	int max2, btn_num2;
-	int pwd = 0;
+	int tmpArray [8];
+	int btn_num;
+	int max = 0;
+	uint8_t i, j;
 	int ir_cnt[N_SENSORS];
+	unsigned char  StartRecodingFlag;
+  	StartRecodingFlag = FALSE;
+
 	
 	printf("RESET");
 	while(1)
@@ -72,65 +79,57 @@ int main(void)
 				ADCSRA |= (1 << ADSC);
 				array[i][cnt] = read_ADC();
 				
-				if(array[i][cnt] >= 650)
-				{
-					array[i][cnt] = 1;
-				}
-				else
-				{
-					array[i][cnt] = 0;
-				}
-			}
+				if (tmpArray[cnt] > THRESHOLD)
+       				{
+            				StartRecodingFlag = TRUE;
+         			}
+      			}
+
 		}
-		
-		for (i=0;i<N_SAMPLES; i++)
-		{
-			for (cnt = 0 ; cnt< N_SENSORS; cnt++)
+		if (StartRecodingFlag == TRUE)
+      		{
+
+			for (i=0;i<N_SAMPLES; i++)
 			{
-				//printf("%d\t",array[i][cnt]); // 센서에 입력되는 값 출력
-				//printf("\n");
+				for (cnt = 0 ; cnt< N_SENSORS; cnt++)
+				{
+					ADMUX = (ADMUX & 0xF8 | cnt);
+            				_delay_ms(10);
+            				ADCSRA |= (1 << ADSC);
+           				 array[i][cnt] = read_ADC(); 
+				}
 			}
-		}
-		//printf("\n");
+		// Sums for all channels
 		for(i=0; i<N_SENSORS; i++)
 		{
 			for (j = 0; j < N_SAMPLES; j++)
 			{
 				ir_cnt[i] += array[j][i];
+				printf("%d, ",array[j][i]);
 			}
-			//printf("%d\t", ir_cnt[i]); // 결과 배열 값 출력
+			printf("\n");
 		}
-		//printf("\n\n"); //줄 띄우기
-		
+		// Find out the max values among the values of sums
+        	//max = 0;
+
 		for(i=0; i<N_SENSORS; i++)
 		{
-			if(max < ir_cnt[i])
+			if(max < ir_cnt[i])// 번호를 0번 부터가 아닌 1번 부터 출력되게 1 더해준 값
 			{
 				max = ir_cnt[i];
 				btn_num = i+1;
 			}
 		}
 		
-		if(btn_num != 0)
-		{
-			//printf("btn_num = %d\n", btn_num);
-			pwd = pwd*10 + btn_num;
-			printf("Password Input : %d\n", pwd);
-		}
-		
-		if(pwd == PWD)
-		{
-			printf("OPEN\n");
-			break;
-		}
-		
-		//printf("max = %d\n", max); // 최대 값 출력
-		btn_num = 0;
-		max = 0;	
-		
-		for(i=0; i<N_SENSORS; i++)
-		{
-			ir_cnt[i] = 0;
-		}
+		printf("%d\n",btn_num);
+      		btn_num = 0;
+      		max = 0;
+      		StartRecodingFlag = FALSE;
+      	}
+      //btn_num = 0;
+	for(i=0; i<N_SENSORS; i++)
+        {
+		ir_cnt[i] = 0;
 	}
+   }
 }
